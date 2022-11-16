@@ -8,9 +8,9 @@ import Navbar from '../components/Navbar';
 // Create an AptosClient to interact with devnet.
 const client = new AptosClient("https://fullnode.devnet.aptoslabs.com/v1");
 
-declare global {
-  interface Window { aptos: any; }
-}
+// declare global {
+//   interface Window { aptos: any; }
+// }
 
 export default function Home() {
   // Retrieve aptos.account on initial render and store it.
@@ -27,12 +27,12 @@ export default function Home() {
   //   }
   // }, [urlAddress]);
 
-  // Use the AptosClient to retrieve details about the account.
-  const [account, setAccount] = useState<Types.AccountData | null>(null);
-  useEffect(() => {
-    if (!address) return;
-    client.getAccount(address).then(setAccount);
-  }, [address]);
+  // // Use the AptosClient to retrieve details about the account.
+  // const [account, setAccount] = useState<Types.AccountData | null>(null);
+  // useEffect(() => {
+  //   if (!address) return;
+  //   client.getAccount(address).then(setAccount);
+  // }, [address]);
 
   return (
     <div className={styles.container}>
@@ -46,7 +46,7 @@ export default function Home() {
         <h1 className={styles.title}>
           Move NFT Create
         </h1>
-        <p className={'mt-4'}>
+        <p style={{ marginTop:30 }}>
           <code>address: {address}</code>
         </p>
       </main>
