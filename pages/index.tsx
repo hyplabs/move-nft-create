@@ -3,6 +3,7 @@ import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { Types, AptosClient } from "aptos";
 import { useEffect, useState } from 'react';
+import Navbar from '../components/Navbar';
 
 // Create an AptosClient to interact with devnet.
 const client = new AptosClient("https://fullnode.devnet.aptoslabs.com/v1");
@@ -13,18 +14,18 @@ declare global {
 
 export default function Home() {
   // Retrieve aptos.account on initial render and store it.
-  const urlAddress = global.window && window.location.pathname.slice(1);
+  // const urlAddress = global.window && window.location.pathname.slice(1);
   const [address, setAddress] = useState<string | null>(null);
-  useEffect(() => {
-    if (urlAddress) {
-      setAddress(urlAddress);
-    } else {
-      window.aptos.connect();
-      window.aptos
-        .account()
-        .then((data: { address: string }) => setAddress(data.address));
-    }
-  }, [urlAddress]);
+  // useEffect(() => {
+  //   if (urlAddress) {
+  //     setAddress(urlAddress);
+  //   } else {
+  //     window.aptos.connect();
+  //     window.aptos
+  //       .account()
+  //       .then((data: { address: string }) => setAddress(data.address));
+  //   }
+  // }, [urlAddress]);
 
   // Use the AptosClient to retrieve details about the account.
   const [account, setAccount] = useState<Types.AccountData | null>(null);
@@ -40,12 +41,12 @@ export default function Home() {
         <meta name="description" content="Move NFT Create" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
+      <Navbar setAddress={setAddress}/>
       <main className={styles.main}>
         <h1 className={styles.title}>
           Move NFT Create
         </h1>
-        <p>
+        <p className={'mt-4'}>
           <code>address: {address}</code>
         </p>
       </main>
