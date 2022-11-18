@@ -80,7 +80,7 @@ export default function Create() {
               placeholder="HYPE"
               {...register("symbol", { required: true })}
               className={styles.input}
-              aria-invalid={errors.name ? "true" : "false"}
+              aria-invalid={errors.symbol ? "true" : "false"}
               ref={(target)=>{if (target) target.value = prefix}}
               onChange={(e)=>{
                 const input = e.target.value
@@ -89,17 +89,16 @@ export default function Create() {
             {errors.symbol && <span className={styles.input_error}>This field is required</span>}
             
             <div className={styles.input_title}>Description</div>
-            <textarea placeholder="This is the description for this collection of NFTs." {...register("description", { required: true })} className={styles.input} aria-invalid={errors.name ? "true" : "false"} />
+            <textarea placeholder="This is the description for this collection of NFTs." {...register("description", { required: true })} className={styles.input} aria-invalid={errors.description ? "true" : "false"} />
             {errors.description && <span className={styles.input_error}>This field is required</span>}
             
             <div className={styles.input_title}>Media</div>
-            <input type="file" accept="image/*, videos/*" {...register("media", { required: true })} className={styles.input} aria-invalid={errors.name ? "true" : "false"} />
+            <input type="file" accept="image/*, videos/*" {...register("media", { required: true })} className={styles.input} aria-invalid={errors.media ? "true" : "false"} />
             {errors.media && <span className={styles.input_error}>This field is required</span>}
             
             <div className="flex flex-row space-x-3">
               <div className="w-48">
                 <div className={styles.input_title}>Sale Type</div>
-                {/* <input type="dropdown" {...register("saleType", { required: true })} className={styles.input} aria-invalid={errors.name ? "true" : "false"} /> */}
                   <div className={`${styles.dropdown}`}>
                     <select {...register("saleType")}>
                       <option value="fixed" className={styles.dropdown_option}>Fixed</option>
@@ -110,7 +109,7 @@ export default function Create() {
               </div>
               <div className="w-full">
                 <div className={styles.input_title}>Price</div>
-                <input type="number" placeholder="0.01" {...register("price", { required: true, valueAsNumber: true, validate: (value) => value > 0, })} className={styles.input} aria-invalid={errors.name ? "true" : "false"}/>
+                <input type="number" placeholder="0.01" {...register("price", { required: true, valueAsNumber: true, validate: (value) => value > 0, })} className={styles.input} aria-invalid={errors.price ? "true" : "false"}/>
                 {errors.price && <span className={styles.input_error}>This field is required</span>}   
               </div>
             </div>
