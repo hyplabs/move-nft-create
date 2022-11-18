@@ -1,92 +1,90 @@
 import Link from "next/link";
-import Image from "next/image";
-import React, { useState, useEffect } from "react";
-import NavItem from "../NavItem";
+import React, { useRef, useEffect, useState } from "react";
+import { Nullable } from '../../utils/types';
+import { trimAddress, getAptosWallet, connectWallet, disconnectWallet } from "../../utils/helper";
 
 export type NavbarProps = {
-  setAddress: (address: string) => void;
+  setAddress: (address: string | null) => void;
+  address: Nullable<string>;
 };
 
-
-const MENU_LIST = [
-  { text: "Home", href: "/" },
-  { text: "About Us", href: "/about" },
-  { text: "Contact", href: "/contact" },
-];
-
-const Navbar: React.FC<NavbarProps> = ({ setAddress }) => {
+const Navbar: React.FC<NavbarProps> = ({ setAddress, address }) => {
   // Retrieve aptos.account on initial render and store it.
-  const urlAddress = global.window && window.location.pathname.slice(1);
-  const [navActive, setNavActive] = useState(false);
-  const [activeIdx, setActiveIdx] = useState(-1);
+  const isConnected = !!address;
+  const [showConnectDropdown, setShowConnectDropdown] = React.useState(false);
+  const dropdownRef = useRef(null);
 
-  // console.log('urlAddres', urlAddress)
+  useEffect(() => {
+    if ('aptos' in window) {
+      (async () => {
+        const wallet = getAptosWallet();
+        if (await wallet.isConnected()) {
+          const account = await wallet.account();
+          setAddress(account.address);
+        }
+      })();
+    }
+  }, []);
 
   // useEffect(() => {
-  //   if (urlAddress) {
-  //     setAddress(urlAddress);
-  //   } else {
-  //     window.aptos.connect();
-  //     window.aptos
-  //       .account()
-  //       .then((data: { address: string }) => setAddress(data.address));
+  //   // only add the event listener when the dropdown is opened
+  //   if (!showConnectDropdown) return;
+  //   function handleClick(event: MouseEvent | TouchEvent) {
+  //     console.log('dropdownRef.current',dropdownRef.current)
+  //     console.log('event.target',event.target)
+  //     console.log( dropdownRef.current !== event.target)
+  //     console.log('showConnectDropdown',showConnectDropdown)
+  //     if (dropdownRef && dropdownRef.current && dropdownRef.current !== event.target) {
+  //       setShowConnectDropdown(false);
+  //     }
   //   }
-  // }, [urlAddress]);
-
-  const connectWallet = async () => {
-    if (urlAddress) {
-      setAddress(urlAddress);
-    } else {
-      await window.aptos.connect();
-      window.aptos
-        .account()
-        .then((data: { address: string }) => {
-          setAddress(data.address);
-        });
-      console.log('three')
-    }
-  };
+  //   window.addEventListener("click", handleClick);
+  //   // clean up
+  //   return () => {
+  //     console.log('hit!!!')
+  //     window.removeEventListener("click", handleClick)
+  //   };
+  // }, [showConnectDropdown]);
 
   return (
-    <header>
+    <header className="bg-white px-10 border-b-2">
       <nav className={`nav`}>
         <Link href={"/"}>
-          {/* <a> */}
           <h1 className="logo">Move NFT Create</h1>
-          {/* </a> */}
         </Link>
-        {/* <div
-          onClick={() => setNavActive(!navActive)}
-          className={`nav__menu-bar`}
-        >
-          <div></div>
-          <div></div>
-          <div></div>
-        </div> */}
-        <div className={`${navActive ? "active" : ""} nav__menu-list`}>
-          {/* {MENU_LIST.map((menu, idx) => (
-            <div
-              onClick={() => {
-                setActiveIdx(idx);
-                setNavActive(false);
-              }}
-              key={menu.text}
-            >
-              <NavItem active={activeIdx === idx} {...menu} />
+        <div className={`nav__menu-list`}>
+          <div>
+            <div>
+              <button
+                className="bg-black hover:bg-gray-800 text-white font-medium py-2.5 rounded w-[156px]"
+                onClick={(e) => {
+                  connectWallet(setAddress);
+                  if (isConnected) setShowConnectDropdown(!showConnectDropdown);
+                }}
+              >
+                {address ? (
+                  <div>
+                    <span style={{ color: '#2AC300', fontSize: '30px', lineHeight: '24px', verticalAlign:'sub'}}>•{' '}</span><span>{trimAddress(address)}</span>
+                  </div>
+                ) : (
+                  <span>Connect Wallet</span>
+                )}
+              </button>
             </div>
-          ))} */}
-          <button
-            style={{ backgroundColor: 'black', color: 'white', paddingInline: '15px', paddingBlock: '10px', borderRadius: 5,  fontWeight: 500 }}
-            className="bg-black hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={(e) => {
-              connectWallet();
-              setActiveIdx(0);
-              setNavActive(false);
-            }}
-          >
-            Connect Wallet
-            {/* <NavItem active={activeIdx === 0} {...{ text: "Connect Wallet", href: "/contact" }} /> */}
-          </button>
+            {showConnectDropdown && (
+              <div>
+                <button
+                  ref={dropdownRef}
+                  className="bg-white hover:bg-gray-100 text-black font-medium py-2.5 rounded w-[156px] absolute"
+                  style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 10px 0 rgba(0, 0, 0, 0.19)' }}
+                  onClick={(e) => {
+                    disconnectWallet(setAddress);
+                    setShowConnectDropdown(false);
+                  }}
+                >Disconnect</button>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
     </header>

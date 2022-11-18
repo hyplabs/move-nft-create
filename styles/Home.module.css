@@ -1,15 +1,23 @@
-.container {
-  padding: 0 2rem;
-}
-
 .main {
-  min-height: calc(100vh - 200px);
-  padding: 4rem 0;
+  min-height: calc(100vh - 175px);
+  padding-bottom: 4rem;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 2rem 0 4rem 0;
+}
+
+.main_create {
+  min-height: calc(100vh - 175px);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 40px;
 }
 
 .footer {
@@ -40,16 +48,111 @@
   font-size: 4rem;
   text-align: center;
 }
+
 .code {
-  background: #fafafa;
+  background: #ececec;
   border-radius: 5px;
   padding: 0.75rem;
   font-size: 1.1rem;
   font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
-    Bitstream Vera Sans Mono, Courier New, monospace;
+  Bitstream Vera Sans Mono, Courier New, monospace;
 }
 
 .logo {
-  height: 1em;
   margin-left: 0.5rem;
+}
+
+.black_button {
+  background-color: 'black';
+  color: 'white';
+  padding-block: '10px';
+  border-radius: 5;
+  font-weight: 500;
+  width: '156px'
+}
+
+.input_title {
+  margin-top:1rem;
+  margin-left: 1rem;
+  font-weight: 500;
+  color: rgb(81,81,81);
+}
+
+.input {
+  background: #ececec;
+  border-radius: 5px;
+  font-size: 1rem;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  width: 100%;
+  margin-top:5px;
+  
+}
+.input:hover {
+  border-color: black;
+}
+
+.dropdown select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width:100%;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  z-index: 10;
+}
+.dropdown {
+  position: relative;
+  background: #ececec;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 100%;
+  margin-top:5px;
+  z-index: 0;
+}
+
+.dropdown::after {
+  content: "⌄";
+  font-size: 1rem;
+  right: 10px;
+  position: absolute;
+  z-index: 0;
+  top:3px;
+}
+/* .dropdown select {
+  border-right: 1rem solid transparent;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  background: #ececec;
+  width:100%;
+  border: none;
+} */
+/* .dropdown {
+  background: #ececec;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 100%;
+  margin-top:5px;
+} */
+.dropdown:hover {
+  border-color: black;
+}
+.dropdown_option {
+  margin-right: 1rem;
+}
+
+.input_error {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  color: red;
+  font-size: 0.85rem;
+  margin-left: 1rem;
+  margin-top: 3px;
+}
+
+@media screen and (min-width: 768px) {
+  .main_create {
+    flex-direction: row;
+  }
 }
