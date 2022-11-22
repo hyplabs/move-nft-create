@@ -86,10 +86,12 @@
   padding-block: 0.5rem;
   width: 100%;
   margin-top:5px;
-  
 }
 .input:hover {
   border-color: black;
+}
+.input:focus {
+  background: white;
 }
 
 .dropdown select {
@@ -155,4 +157,8 @@
   .main_create {
     flex-direction: row;
   }
+}
+
+.invalid {
+  border: 1px solid #ff0000
 }
