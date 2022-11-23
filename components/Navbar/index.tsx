@@ -2,13 +2,15 @@ import Link from "next/link";
 import React, { useRef, useEffect, useState } from "react";
 import { Nullable } from '../../utils/types';
 import { trimAddress, getAptosWallet, connectWallet, disconnectWallet } from "../../utils/helper";
+import { AptosAccount } from "aptos";
 
 export type NavbarProps = {
-  setAddress: (address: string | null) => void;
+  setAddress: (address: Nullable<string>) => void;
+  setAccount: (account: Nullable<AptosAccount>) => void;
   address: Nullable<string>;
 };
 
-const Navbar: React.FC<NavbarProps> = ({ setAddress, address }) => {
+const Navbar: React.FC<NavbarProps> = ({ setAddress, setAccount, address }) => {
   // Retrieve aptos.account on initial render and store it.
   const isConnected = !!address;
   const [showConnectDropdown, setShowConnectDropdown] = React.useState(false);
@@ -58,7 +60,7 @@ const Navbar: React.FC<NavbarProps> = ({ setAddress, address }) => {
               <button
                 className="bg-black hover:bg-gray-800 text-white font-medium py-2.5 rounded w-[156px]"
                 onClick={(e) => {
-                  connectWallet(setAddress);
+                  connectWallet(setAddress, setAccount);
                   if (isConnected) setShowConnectDropdown(!showConnectDropdown);
                 }}
               >
@@ -78,8 +80,12 @@ const Navbar: React.FC<NavbarProps> = ({ setAddress, address }) => {
                   className="bg-white hover:bg-gray-100 text-black font-medium py-2.5 rounded w-[156px] absolute"
                   style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 10px 0 rgba(0, 0, 0, 0.19)' }}
                   onClick={(e) => {
-                    disconnectWallet(setAddress);
-                    setShowConnectDropdown(false);
+                    (async () => {
+                      await disconnectWallet();
+                      setAddress(null);
+                      setAccount(null);
+                      setShowConnectDropdown(false);
+                    })();
                   }}
                 >Disconnect</button>
               </div>

@@ -1,3 +1,5 @@
+import { AptosAccount } from "aptos";
+
 export const trimAddress = (address: string) => {
   const prefix_address = "0x";
   try {
@@ -17,23 +19,23 @@ export const getAptosWallet = () => {
   }
 };
 
-export const connectWallet = async (setAddress: (address: string | null) => void) => {
+export const connectWallet = async (setAddress: (address: string | null) => void, setAccount: (account: AptosAccount) => void) => {
   const wallet = getAptosWallet();
   try {
     const response = await wallet.connect(); // { address: string, publicKey: string }
     setAddress(response.address);
 
-    const account = await wallet.account(); // { address: string, publicKey: string }
+    const account: AptosAccount = await wallet.account(); // { address: string, publicKey: string }
+    setAccount(account);
   } catch (error) {
     // { code: 4001, message: "User rejected the request."}
   }
 };
 
-export const disconnectWallet = async (setAddress: (address: string | null) => void, ) => {
+export const disconnectWallet = async () => {
   const wallet = getAptosWallet();
   try {
     await wallet.disconnect();
-    setAddress(null);
   } catch (error) {
   }
 }

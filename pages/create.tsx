@@ -5,6 +5,17 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { connectWallet, getAptosWallet } from "../utils/helper";
 import { useForm } from "react-hook-form";
+import {
+  AptosClient,
+  AptosAccount,
+  CoinClient,
+  TokenClient,
+  FaucetClient,
+  HexString,
+  TxnBuilderTypes,
+  BCS,
+} from "aptos";
+import { Nullable } from '../utils/types';
 
 enum SaleType {
   FIXED = 'fixed',
@@ -28,8 +39,9 @@ export default function Create() {
     formState: { errors },
     setError,
   } = useForm();
-  const [address, setAddress] = useState<string | null>(null);
-  const isConnected = !!address;
+  const [address, setAddress] = useState<Nullable<string>>(null);
+  const [account, setAccount] = useState<Nullable<AptosAccount>>(null);
+  let isConnected = !!address;
   const SYMBOL_PREFIX = "$";
   const placeholderImage = "https://i.redd.it/ksujk7ou8bo41.png";
 
@@ -52,11 +64,46 @@ export default function Create() {
   };
 
   const handleConnect=()=>{
-    if (!isConnected) connectWallet(setAddress);
+    if (!isConnected) connectWallet(setAddress, setAccount);
   }
 
-  const createCollection = (values: Collection) => {
-    console.log('creating collection...', values)
+  const createCollection = async (collection: Collection) => {
+    console.log('creating collection...', collection)
+
+    if (account === null) {
+      console.log('connectWallet!')
+      connectWallet(setAddress, setAccount);
+      return;
+    }
+    
+
+    // Initialize Listing
+
+    // Purchase listed token
+
+    //////////////////////////////////////////////////////////
+    const NODE_URL = "http://127.0.0.1:8080";
+    const FAUCET_URL = "http://127.0.0.1:8081";
+    // const NODE_URL: string = "https://fullnode.devnet.aptoslabs.com/v1/"
+    // const FAUCET_URL = "https://faucet.devnet.aptoslabs.com"
+
+    const alice = new AptosAccount();
+    const client = new AptosClient(NODE_URL);
+    const tokenClient = new TokenClient(client);
+
+    const tx = await tokenClient.createCollection(
+      alice,
+      collection.name,
+      collection.description,
+      "https://xyz.com"
+    );
+    await client.waitForTransaction(tx);
+    const collectionData = await tokenClient.getCollectionData(
+      alice.address(),
+      collection.name
+    );
+    console.log('collectionData', collectionData)
+
   };
 
   return (
@@ -66,7 +113,7 @@ export default function Create() {
         <meta name="description" content="Move NFT Create" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Navbar setAddress={setAddress} address={address} />
+      <Navbar setAddress={setAddress} setAccount={setAccount} address={address} />
       <main className={styles.main_create}>
         {/* Collection preview on left half of screen */}
         <div className="w-full md:w-1/2 mb-8 md:pr-16 font-medium pt-14 space-y-4">
@@ -188,12 +235,12 @@ export default function Create() {
               <div className="w-full">
                 <div className={styles.input_title}>Price</div>
                 <input
-                  type="number"
                   placeholder="0.01"
                   {...register("price", {
                     required: true,
-                    valueAsNumber: true,
+                    pattern: /^((\d+(\.\d*)?)|(\.\d+))$/,
                     validate: (value) => value && value > 0,
+                    // valueAsNumber: true,
                   })}
                   className={`${styles.input} ${
                     errors.price && styles.invalid
