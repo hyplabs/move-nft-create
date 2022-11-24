@@ -1,18 +1,21 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { connectWallet, getAptosWallet, getCurrentLocalDateTime } from "../utils/helper";
 import { useForm } from "react-hook-form";
-import { AptosClient, AptosAccount } from "aptos";
-import { Nullable, SaleType, Collection, TokenDataId, WithdrawCapability, TokenId } from "../utils/types";
+import { AptosClient } from "aptos";
+import { Nullable, SaleType, Collection } from "../utils/types";
 import placeholderImg from 'public/images/placeholder.png';
 
 const APTOS_COIN_VALUE = 100_000_000;
 
 const MODULE_OWNER_ADDRESS =
   "0x7f3d5a9cb25dcd7b3f9a73d266b96b62c13e0326abc0755c7f619ed2b908e98f";
+
+  const NODE_URL = "http://127.0.0.1:8080";
+  // const NODE_URL: string = "https://fullnode.devnet.aptoslabs.com/v1/"
 
 export default function Create() {
   const {
@@ -21,9 +24,10 @@ export default function Create() {
     formState: { errors },
     getValues,
     setError,
+    clearErrors,
+    setValue,
   } = useForm();
   const [address, setAddress] = useState<Nullable<string>>(null);
-  const [account, setAccount] = useState<Nullable<AptosAccount>>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [name, setName] = useState<string>('Collection Name');
   const [symbol, setSymbol] = useState<string>('SYMBOL');
@@ -32,6 +36,7 @@ export default function Create() {
   const [saleType, setSaleType] = useState<SaleType>(SaleType.FIXED);
   const [price, setPrice] = useState<number>(0);
   const [editions, setEditions] = useState<number>(1000);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   let isConnected = !!address;
 
@@ -49,37 +54,23 @@ export default function Create() {
 
   const onSubmit = (values: any) => {
     console.log("onSubmit");
-    // connectWallet(setAddress);
+    setErrorMessage('');
     if (isConnected) createCollection(values as Collection);
-  };
-
-  const handleConnect = async () => {
-    console.log('handleConnect')
-    if (!address) await connectWallet(setAddress, setAccount);
-    const collectionValues = getValues() as Collection;
-    createCollection(collectionValues);
+    else connectWallet(setAddress);
   };
 
   const createCollection = async (collection: Collection) => {
     console.log("creating collection...", collection);
 
-    if (account === null) {
-      console.log("connectWallet!");
-      await connectWallet(setAddress, setAccount);
-    }
-
-    if (account === null || address === null) return;
-
+    if (address === null) throw "Please connect your wallet";
     setIsLoading(true);
 
     const response = await fetch("/api/createModule");
     if (response.status !== 200) {
       setIsLoading(false);
+      setErrorMessage("Error creating module");
       throw "Error creating module";
     };
-
-    const NODE_URL = "http://127.0.0.1:8080";
-    // const NODE_URL: string = "https://fullnode.devnet.aptoslabs.com/v1/"
 
     const client = new AptosClient(NODE_URL);
     const payload =
@@ -96,9 +87,11 @@ export default function Create() {
       );
       setIsLoading(false);
       console.log("3 txn", txn);
-    } catch (error) {
+      setErrorMessage('');
+    } catch (error: any) {
       setIsLoading(false);
-      throw error;
+      if (error && error.message) setErrorMessage(error.message);
+      else throw error;
     }
   };
 
@@ -106,12 +99,12 @@ export default function Create() {
     const data = [
       collection.name, // collection name
       collection.description, // collection description
-      "https://xyz.com", // collection uri
+      collection.media, // collection uri
       collection.editions ?? 1000, // collection maximum
       [false, false, false], // collection mutate settings
       collection.symbol, // token name
       collection.description, //token description
-      "https://xyz.com", //token uri
+      collection.media, //token uri
       address, // royalty payee address
       100, // royalty points denominator
       0, // royalty points numerator - set to 0 for no royalties to be paid to royalty address
@@ -138,12 +131,12 @@ export default function Create() {
     const data = [
       collection.name, // collection name
       collection.description, // collection description
-      "https://xyz.com", // collection uri
+      collection.media, // collection uri
       collection.editions ?? 1000, // collection maximum
       [false, false, false], // collection mutate settings
       collection.symbol, // token name
       collection.description, //token description
-      "https://xyz.com", //token uri
+      collection.media, //token uri
       address, // royalty payee address
       100, // royalty points denominator
       0, // royalty points numerator - set to 0 for no royalties to be paid to royalty address
@@ -162,7 +155,7 @@ export default function Create() {
     };
     return payload;
   };
-
+  console.log('errors.price', errors.price)
   return (
     <div className={styles.container}>
       <Head>
@@ -172,37 +165,35 @@ export default function Create() {
       </Head>
       <Navbar
         setAddress={setAddress}
-        setAccount={setAccount}
         address={address}
       />
       <main className={styles.main_create}>
         {/* Collection preview on left half of screen */}
-        <div className="w-full lg:w-1/2 mb-8 lg:pr-16 font-medium pt-14 space-y-5">
+        <div className="w-full lg:w-1/2 lg:pr-16 font-medium pt-14 space-y-5 md:border-r-2 min-h-[58rem]">
           <div className={styles.placeholder_image} style={{ aspectRatio: 1/1 }}>
             <img src={mediaUrl || placeholderImg.src} className="border-2 rounded-xl my-auto w-full"/>
           </div>
           <h2 className="text-4xl pt-6">{name}</h2>
-          <div className="text-sm space-x-6 flex">
+          <div className="flex text-md space-x-6">
             <div className="bg-black text-white py-1 px-2 rounded">${symbol}</div>
             <div className="my-auto">EDITION OF {editions}</div>
           </div>
-          <p className="text-sm space-x-6 font-normal text-gray-500 ">{description}</p>
-          <div className="flex flex-row space-x-6 flex">
+          <p className="text-md font-normal text-gray-500 ">{description}</p>
+          <div className="flex flex-row space-x-6 pb-16">
             <div>
-              <div className="text-sm">EDITION {saleType === SaleType.AUCTION && 'MIN '}PRICE</div>
+              <div className="text-md">EDITION {saleType === SaleType.AUCTION && 'MIN '}PRICE</div>
               <div className="font-bold text-2xl">{price} APTOS</div>
             </div>
             <div>
-              <div className="text-sm">TOTAL SUPPLY</div>
+              <div className="text-kf">TOTAL SUPPLY</div>
               <div className="font-bold text-2xl">{editions}</div>
             </div>
           </div>
         </div>
 
         {/* Collection details form on right half of screen */}
-        <div className="w-full md:w-1/2 md:pl-16 md:border-l-2 py-14">
+        <div className="w-full md:w-1/2 md:pl-16 py-14">
           <h2 className="text-4xl mb-8">Collection Details</h2>
-
           {/* Metadata form */}
           <form onSubmit={handleSubmit(onSubmit)} className="flex-col">
             {/* Collection Name */}
@@ -224,20 +215,13 @@ export default function Create() {
                 placeholder="HYPE"
                 {...register("symbol", {
                   required: true,
-                  pattern: {
-                    value: /\$[A-Za-z0-9]+/g,
-                    message: "Invalid symbol"
-                  }
                 })}
                 className={`${styles.symbol_input} ${errors.symbol && styles.invalid}`}
                 onChange={(e) => {
-                  const input = e.target.value.toLocaleUpperCase();
-                  const re = /\$[A-Za-z0-9]+/g;
-                  const regex = new RegExp(/\$[A-Za-z0-9]+/g);
-                  const cleanText = input.replace(regex, "");
-                  const newText = re[Symbol.replace](input, "");
-                  console.log('cleanText', newText)
-                  e.target.value = input.replace(/[^0-9A-Z]+/ig, "")
+                  // Only accept alphanumeric characters as input for NFT $SYMBOL
+                  const cleanText = e.target.value.replace(/[^0-9a-zA-Z]+/ig, "").toLocaleUpperCase();
+                  setSymbol(cleanText);
+                  setValue("symbol", cleanText);
                 }}
               />
             </div>
@@ -259,12 +243,6 @@ export default function Create() {
             )}
             {/* NFT Media Image/Video */}
             <div className={styles.input_title}>Media URL</div>
-            {/* <input
-              type="file"
-              accept="image/*, videos/*"
-              {...register("media", { required: true })}
-              className={`${styles.input} ${errors.media && styles.invalid}`}
-            /> */}
             <input
               type="text"
               placeholder="https://example.png"
@@ -306,11 +284,17 @@ export default function Create() {
                 <div className={styles.input_title}>{saleType === SaleType.FIXED ? 'Price' : 'Min Price'}</div>
                 <div className={`${styles.input_container} ${errors.price && styles.invalid}`}>
                   <input
+                    // type="number"
                     placeholder="0.01"
                     {...register("price", {
                       required: true,
-                      pattern: /^((\d+(\.\d*)?)|(\.\d+))$/,
-                      validate: (value) => value && value > 0,
+                      pattern: {
+                          value: /^((\d+(\.\d*)?)|(\.\d+))$/,
+                          message: 'Please enter a number',
+                      },
+                      // pattern: /^((\d+(\.\d*)?)|(\.\d+))$/,
+                      // validate: (value) => value && value > 0,
+                      // valueAsNumber: true,
                     })}
                     className={styles.price}
                     onChange={(e) => setPrice(Number(e.target.value) || 0)}
@@ -319,14 +303,14 @@ export default function Create() {
                 </div>
                 {errors.price && (
                   <span className={styles.input_error}>
-                    This field is required
+                    {errors.price.type === 'required' ? 'This field is required' : errors.price.message?.toString()}
                   </span>
                 )}
               </div>
             </div>
             {saleType === SaleType.AUCTION && (
               <div className="flex flex-row space-x-3">
-                {/* Start Auction Date  - must be now (can only pass duration to create auction collection) */}
+                {/* Start Auction Date  - must be now (can only pass duration as param to the create AuctionHouse collection function) */}
                 <div className="w-full mt-auto">
                   <div className={styles.input_title}>Start Date</div>
                   <input className={styles.input_disabled} type="text" placeholder='Now' disabled />
@@ -369,13 +353,30 @@ export default function Create() {
               }
             />
             {/* Create Collection Button */}
-            <input
-              type="submit"
-              value={isLoading ? 'Loading...' : isConnected ? "Create Collection" : "Connect Wallet"}
-              className={`${isLoading ? 'bg-gray-500':'bg-black hover:bg-gray-800'} text-white font-medium py-2.5 rounded w-full mt-12 ${isLoading && 'cursor-not-allowed'}`}
-              onClick={handleConnect}
-              disabled={isLoading}
-            />
+            <div className={`${isLoading ? 'cursor-not-allowed':'hover:bg-gray-800'} bg-black text-white font-medium py-2.5 rounded w-full mt-12`}>
+                {isLoading ? (
+                  <div className="w-full flex" role="status">
+                    <svg className="mx-auto inline w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                    </svg>
+                    <span className="sr-only">Loading...</span>
+                  </div>
+                ) : (
+                  <input
+                    type="submit"
+                    value={isConnected ? "Create Collection" : "Connect Wallet"}
+                    className={`w-full hover:cursor-pointer`}
+                    // onClick={handleConnect}
+                    disabled={isLoading}
+                  />
+                )}
+            </div>
+            {errorMessage && (
+              <span className={styles.input_error}>
+                {errorMessage}
+              </span>
+            )}
           </form>
         </div>
       </main>

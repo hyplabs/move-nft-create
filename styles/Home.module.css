@@ -186,12 +186,12 @@
   font-size: 1rem;
   padding-right: 1rem;
   padding-left: 25px;
-  padding-block: 7px;
+  padding-block: 8px;
   width: 100%;
 }
 
 .unit {
-  padding-block: 7px;
+  padding-block: 8px;
   float:right;
   text-align: right;
   width: 55px;

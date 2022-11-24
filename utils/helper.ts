@@ -1,5 +1,3 @@
-import { AptosAccount } from "aptos";
-
 export const trimAddress = (address: string) => {
   const prefix_address = "0x";
   try {
@@ -19,14 +17,11 @@ export const getAptosWallet = () => {
   }
 };
 
-export const connectWallet = async (setAddress: (address: string | null) => void, setAccount: (account: AptosAccount) => void) => {
+export const connectWallet = async (setAddress: (address: string | null) => void) => {
   const wallet = getAptosWallet();
   try {
     const response = await wallet.connect(); // { address: string, publicKey: string }
     setAddress(response.address);
-
-    const account: AptosAccount = await wallet.account(); // { address: string, publicKey: string }
-    setAccount(account);
   } catch (error) {
     // { code: 4001, message: "User rejected the request."}
   }
@@ -41,12 +36,6 @@ export const disconnectWallet = async () => {
 }
 
 export function getCurrentLocalDateTime(){
-  // let newDate = new Date()
-  // let date = newDate.getDate();
-  // let month = newDate.getMonth() + 1;
-  // let year = newDate.getFullYear();
-  
-  // return `${year}${separator}${month<10?`0${month}`:`${month}`}${separator}${date}`
   var now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   return now.toISOString().slice(0,16);
