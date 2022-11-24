@@ -78,7 +78,7 @@
   color: rgb(81,81,81);
 }
 
-.input {
+.input, .input_disabled {
   background: #ececec;
   border-radius: 5px;
   font-size: 1rem;
@@ -87,11 +87,28 @@
   width: 100%;
   margin-top:5px;
 }
+.input_disabled {
+  color: rgb(160,160,160);
+  cursor: not-allowed;
+}
 .input:hover {
   border-color: black;
 }
 .input:focus {
   background: white;
+}
+.input::placeholder {
+  color: rgb(160,160,160);
+}
+
+.input_error {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  color: red;
+  font-size: 0.85rem;
+  margin-left: 1rem;
+  margin-top: 3px;
 }
 
 .dropdown select {
@@ -141,16 +158,6 @@
 }
 .dropdown_option {
   margin-right: 1rem;
-}
-
-.input_error {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  color: red;
-  font-size: 0.85rem;
-  margin-left: 1rem;
-  margin-top: 3px;
 }
 
 @media screen and (min-width: 768px) {
