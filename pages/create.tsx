@@ -1,74 +1,18 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import { connectWallet, getAptosWallet, getCurrentLocalDateTime } from "../utils/helper";
 import { useForm } from "react-hook-form";
 import { AptosClient, AptosAccount } from "aptos";
-import { Nullable } from "../utils/types";
-
-enum SaleType {
-  FIXED = "fixed",
-  AUCTION = "auction",
-}
-
-type Collection = {
-  name: string;
-  symbol: string;
-  description: string;
-  media: File;
-  saleType: SaleType;
-  price: number;
-  editions: number;
-  endDate?: string;
-};
-
-type Table = {
-  items?: { handle: string };
-};
-
-type TokenDataId = {
-  creator: string;
-  collection: string;
-  name: string;
-};
-
-type AuctionItem = {
-  current_bid?: { value: string };
-  current_bidder?: string;
-  end_time?: string;
-  min_selling_price?: string;
-  start_time?: string;
-  token?: TokenId;
-  withdrawCapability?: WithdrawCapability;
-};
-
-type WithdrawCapability = {
-  amount: string;
-  expiration_sec: string;
-  token_id: TokenId;
-  token_owner: string;
-};
-
-type TokenId = {
-  property_version: string;
-  token_data_id: TokenDataId;
-};
-
-type ListingItem = {
-  list_price?: string;
-  end_time?: string;
-  token?: TokenId;
-  withdrawCapability?: WithdrawCapability;
-};
+import { Nullable, SaleType, Collection, TokenDataId, WithdrawCapability, TokenId } from "../utils/types";
+import placeholderImg from 'public/images/placeholder.png';
 
 const APTOS_COIN_VALUE = 100_000_000;
 
 const MODULE_OWNER_ADDRESS =
   "0x7f3d5a9cb25dcd7b3f9a73d266b96b62c13e0326abc0755c7f619ed2b908e98f";
-
-const expirationTime = 2000000;
 
 export default function Create() {
   const {
@@ -76,15 +20,20 @@ export default function Create() {
     register,
     formState: { errors },
     getValues,
+    setError,
   } = useForm();
   const [address, setAddress] = useState<Nullable<string>>(null);
   const [account, setAccount] = useState<Nullable<AptosAccount>>(null);
-  const [saleType, setSaleType] = useState<SaleType>(SaleType.FIXED);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  let isConnected = !!address;
-  const SYMBOL_PREFIX = "$";
-  const placeholderImage = "https://i.redd.it/ksujk7ou8bo41.png";
+  const [name, setName] = useState<string>('Collection Name');
+  const [symbol, setSymbol] = useState<string>('SYMBOL');
+  const [description, setDescription] = useState<string>('Description');
+  const [mediaUrl, setMediaUrl] = useState<string>(placeholderImg.src);
+  const [saleType, setSaleType] = useState<SaleType>(SaleType.FIXED);
+  const [price, setPrice] = useState<number>(0);
+  const [editions, setEditions] = useState<number>(1000);
 
+  let isConnected = !!address;
 
   useEffect(() => {
     if ("aptos" in window) {
@@ -99,13 +48,13 @@ export default function Create() {
   }, []);
 
   const onSubmit = (values: any) => {
-    console.log("yo");
+    console.log("onSubmit");
     // connectWallet(setAddress);
     if (isConnected) createCollection(values as Collection);
   };
 
   const handleConnect = async () => {
-    console.log('jer')
+    console.log('handleConnect')
     if (!address) await connectWallet(setAddress, setAccount);
     const collectionValues = getValues() as Collection;
     createCollection(collectionValues);
@@ -158,7 +107,7 @@ export default function Create() {
       collection.name, // collection name
       collection.description, // collection description
       "https://xyz.com", // collection uri
-      1000, // collection maximum
+      collection.editions ?? 1000, // collection maximum
       [false, false, false], // collection mutate settings
       collection.symbol, // token name
       collection.description, //token description
@@ -171,7 +120,7 @@ export default function Create() {
       [], // property values
       [], // property types
       collection.price * APTOS_COIN_VALUE, // listing price
-      expirationTime, // expiration time
+      0, // expiration time (ms), if expirationTime is 0 -> sale will last forever
     ];
     const payload = {
       arguments: data,
@@ -190,7 +139,7 @@ export default function Create() {
       collection.name, // collection name
       collection.description, // collection description
       "https://xyz.com", // collection uri
-      1000, // collection maximum
+      collection.editions ?? 1000, // collection maximum
       [false, false, false], // collection mutate settings
       collection.symbol, // token name
       collection.description, //token description
@@ -203,7 +152,7 @@ export default function Create() {
       [], // property values
       [], // property types
       collection.price * APTOS_COIN_VALUE, // listing price
-      expirationTime > 0 ? expirationTime : 0, // expiration time (ms), if expirationTime=0 -> sale will last forever
+      expirationTime > 0 ? expirationTime : 0, // expiration time (ms), if expirationTime is 0 -> sale will last forever
     ];
     const payload = {
       arguments: data,
@@ -228,22 +177,24 @@ export default function Create() {
       />
       <main className={styles.main_create}>
         {/* Collection preview on left half of screen */}
-        <div className="w-full lg:w-1/2 mb-8 lg:pr-16 font-medium pt-14 space-y-4">
-          <img src={placeholderImage} className="border-2 rounded-xl mx-auto" />
-          <h2 className="text-4xl pt-6">Collection Name</h2>
-          <div className="text-sm space-x-6">
-            <span>$SYMBOL</span>
-            <span>EDITION OF 1000</span>
+        <div className="w-full lg:w-1/2 mb-8 lg:pr-16 font-medium pt-14 space-y-5">
+          <div className={styles.placeholder_image} style={{ aspectRatio: 1/1 }}>
+            <img src={mediaUrl || placeholderImg.src} className="border-2 rounded-xl my-auto w-full"/>
           </div>
-          <p className="text-sm space-x-6 font-normal">Description</p>
-          <div className="flex flex-row space-x-6">
+          <h2 className="text-4xl pt-6">{name}</h2>
+          <div className="text-sm space-x-6 flex">
+            <div className="bg-black text-white py-1 px-2 rounded">${symbol}</div>
+            <div className="my-auto">EDITION OF {editions}</div>
+          </div>
+          <p className="text-sm space-x-6 font-normal text-gray-500 ">{description}</p>
+          <div className="flex flex-row space-x-6 flex">
             <div>
-              <div className="text-sm">EDITION PRICE</div>
-              <div className="font-bold text-2xl">0.00 APTOS</div>
+              <div className="text-sm">EDITION {saleType === SaleType.AUCTION && 'MIN '}PRICE</div>
+              <div className="font-bold text-2xl">{price} APTOS</div>
             </div>
             <div>
               <div className="text-sm">TOTAL SUPPLY</div>
-              <div className="font-bold text-2xl">1000</div>
+              <div className="font-bold text-2xl">{editions}</div>
             </div>
           </div>
         </div>
@@ -260,45 +211,36 @@ export default function Create() {
               placeholder="Hype Labs"
               {...register("name", { required: true })}
               className={`${styles.input} ${errors.name && styles.invalid}`}
+              onChange={(e) => setName(e.target.value || "Collection Name")}
             />
             {errors.name && (
               <span className={styles.input_error}>This field is required</span>
             )}
             {/* NFT Symbol */}
             <div className={styles.input_title}>Symbol</div>
-            <input
-              placeholder="HYPE"
-              {...register("symbol", {
-                required: true,
-                // pattern: {
-                //   value: /\$[A-Za-z0-9]+/g,
-                //   message: "Invalid symbol"
-                // }
-              })}
-              className={`${styles.input} ${errors.symbol && styles.invalid}`}
-              // ref={(target) => {
-              //   console.log('sym', errors.symbol)
-              //   console.log('um', target?.value)
-              //   if (target && (target.value === undefined || target.value === '')) target.value = SYMBOL_PREFIX;
-              // }}
-              onChange={(e) => {
-                const input = e.target.value;
-                // if (!input.match('/\$[A-Za-z0-9]+/g')) {
-                //   console.log('lol')
-                //   setError('symbol', { type: 'custom', message: 'custom message' });
-                //   return;
-                // }
-                // else {
-                //   console.log('yo')
-                // }
-                // if (input.match('/\$[A-Za-z0-9]+/g')) {
-                //   console.log('ALERT')
-                // }
-                e.target.value =
-                  SYMBOL_PREFIX +
-                  input.substring(SYMBOL_PREFIX.length).toUpperCase();
-              }}
-            />
+            <div className={styles.input_container}>
+              <span className={styles.symbol_prefix}>$</span>
+              <input
+                placeholder="HYPE"
+                {...register("symbol", {
+                  required: true,
+                  pattern: {
+                    value: /\$[A-Za-z0-9]+/g,
+                    message: "Invalid symbol"
+                  }
+                })}
+                className={`${styles.symbol_input} ${errors.symbol && styles.invalid}`}
+                onChange={(e) => {
+                  const input = e.target.value.toLocaleUpperCase();
+                  const re = /\$[A-Za-z0-9]+/g;
+                  const regex = new RegExp(/\$[A-Za-z0-9]+/g);
+                  const cleanText = input.replace(regex, "");
+                  const newText = re[Symbol.replace](input, "");
+                  console.log('cleanText', newText)
+                  e.target.value = input.replace(/[^0-9A-Z]+/ig, "")
+                }}
+              />
+            </div>
             {errors.symbol && (
               <span className={styles.input_error}>This field is required</span>
             )}
@@ -310,17 +252,25 @@ export default function Create() {
               className={`${styles.input} ${
                 errors.description && styles.invalid
               }`}
+              onChange={(e) => setDescription(e.target.value || "Description")}
             />
             {errors.description && (
               <span className={styles.input_error}>This field is required</span>
             )}
             {/* NFT Media Image/Video */}
-            <div className={styles.input_title}>Media</div>
-            <input
+            <div className={styles.input_title}>Media URL</div>
+            {/* <input
               type="file"
               accept="image/*, videos/*"
               {...register("media", { required: true })}
               className={`${styles.input} ${errors.media && styles.invalid}`}
+            /> */}
+            <input
+              type="text"
+              placeholder="https://example.png"
+              {...register("media", { required: true })}
+              className={`${styles.input} ${errors.media && styles.invalid}`}
+              onChange={(e) => setMediaUrl(e.target.value || placeholderImg.src)}
             />
             {errors.media && (
               <span className={styles.input_error}>This field is required</span>
@@ -353,19 +303,20 @@ export default function Create() {
               </div>
               {/* NFT Price */}
               <div className="w-full">
-                <div className={styles.input_title}>Price</div>
-                <input
-                  placeholder="0.01"
-                  {...register("price", {
-                    required: true,
-                    pattern: /^((\d+(\.\d*)?)|(\.\d+))$/,
-                    validate: (value) => value && value > 0,
-                    // valueAsNumber: true,
-                  })}
-                  className={`${styles.input} ${
-                    errors.price && styles.invalid
-                  }`}
-                />
+                <div className={styles.input_title}>{saleType === SaleType.FIXED ? 'Price' : 'Min Price'}</div>
+                <div className={`${styles.input_container} ${errors.price && styles.invalid}`}>
+                  <input
+                    placeholder="0.01"
+                    {...register("price", {
+                      required: true,
+                      pattern: /^((\d+(\.\d*)?)|(\.\d+))$/,
+                      validate: (value) => value && value > 0,
+                    })}
+                    className={styles.price}
+                    onChange={(e) => setPrice(Number(e.target.value) || 0)}
+                  />
+                  <span className={styles.unit}>APTOS</span>
+                </div>
                 {errors.price && (
                   <span className={styles.input_error}>
                     This field is required
@@ -406,20 +357,22 @@ export default function Create() {
             {/* Editions - fixed at 1000 */}
             <div className={styles.input_title}>Editions</div>
             <input
-              type="editions"
-              value={1000}
+              type="number"
+              placeholder="1000"
               {...register("editions", {
-                required: true,
                 valueAsNumber: true,
+                validate: (value) => value && value > 0,
               })}
-              className={styles.input_disabled}
-              disabled
+              className={styles.input}
+              onChange={(e) => {
+                setEditions(Number(e.target.value) || 1000)}
+              }
             />
             {/* Create Collection Button */}
             <input
               type="submit"
               value={isLoading ? 'Loading...' : isConnected ? "Create Collection" : "Connect Wallet"}
-              className={`bg-black hover:bg-gray-800 text-white font-medium py-2.5 rounded w-full mt-12 ${isLoading && 'cursor-not-allowed'}`}
+              className={`${isLoading ? 'bg-gray-500':'bg-black hover:bg-gray-800'} text-white font-medium py-2.5 rounded w-full mt-12 ${isLoading && 'cursor-not-allowed'}`}
               onClick={handleConnect}
               disabled={isLoading}
             />
