@@ -251,168 +251,168 @@ describe("set up account, mint tokens and publish module", () => {
   });
 });
 
-describe("Auction House Transaction", () => {
-  it("can initialize auction", async () => {
-    // For a custom transaction, pass the function name with deployed address
-    // syntax: deployed_address::module_name::struct_name
-    let expirationTime = 0;
-    if (NODE_URL == "http://127.0.0.1:8080") 
-      expirationTime = 2000000; 
-    else
-      expirationTime = 8000000;
-    const data = [
-      alice.address(),
-      aliceCollection.name,
-      aliceTokens[0].name,
-      100,
-      expirationTime,
-      0,
-    ];
-    const payload = {
-      arguments: data,
-      function: `${moduleOwner.address()}::Auction::initialize_auction`,
-      type: "entry_function_payload",
-      type_arguments: ["0x1::aptos_coin::AptosCoin"],
-    };
-    try {
-      const transaction = await client.generateTransaction(
-        alice.address(),
-        payload
-      );
-      const signature = await client.signTransaction(alice, transaction);
-      const tx = await client.submitTransaction(signature);
-      await client.waitForTransaction(tx.hash, { checkSuccess: true });
-      const resource = await client.getAccountResource(
-        alice.address(),
-        `${moduleOwner.address()}::Auction::AuctionItem<0x1::aptos_coin::AptosCoin>`
-      );
-      const aliceData: Table = resource.data;
-      const handle = aliceData.items?.handle;
+// describe("Auction House Transaction", () => {
+//   it("can initialize auction", async () => {
+//     // For a custom transaction, pass the function name with deployed address
+//     // syntax: deployed_address::module_name::struct_name
+//     let expirationTime = 0;
+//     if (NODE_URL == "http://127.0.0.1:8080") 
+//       expirationTime = 2000000; 
+//     else
+//       expirationTime = 8000000;
+//     const data = [
+//       alice.address(),
+//       aliceCollection.name,
+//       aliceTokens[0].name,
+//       100,
+//       expirationTime,
+//       0,
+//     ];
+//     const payload = {
+//       arguments: data,
+//       function: `${moduleOwner.address()}::Auction::initialize_auction`,
+//       type: "entry_function_payload",
+//       type_arguments: ["0x1::aptos_coin::AptosCoin"],
+//     };
+//     try {
+//       const transaction = await client.generateTransaction(
+//         alice.address(),
+//         payload
+//       );
+//       const signature = await client.signTransaction(alice, transaction);
+//       const tx = await client.submitTransaction(signature);
+//       await client.waitForTransaction(tx.hash, { checkSuccess: true });
+//       const resource = await client.getAccountResource(
+//         alice.address(),
+//         `${moduleOwner.address()}::Auction::AuctionItem<0x1::aptos_coin::AptosCoin>`
+//       );
+//       const aliceData: Table = resource.data;
+//       const handle = aliceData.items?.handle;
 
-      const tokenDataId: TokenDataId = {
-        creator: alice.address().toShortString(),
-        collection: aliceCollection.name,
-        name: aliceTokens[0].name,
-      };
+//       const tokenDataId: TokenDataId = {
+//         creator: alice.address().toShortString(),
+//         collection: aliceCollection.name,
+//         name: aliceTokens[0].name,
+//       };
 
-      const key: TokenId = {
-        token_data_id: tokenDataId,
-        property_version: "0",
-      };
+//       const key: TokenId = {
+//         token_data_id: tokenDataId,
+//         property_version: "0",
+//       };
 
-      if (handle != null) {
-        const item: AuctionItem = await client.getTableItem(handle, {
-          key: key,
-          key_type: "0x3::token::TokenId",
-          value_type: `${moduleOwner.address()}::Auction::Item<0x1::aptos_coin::AptosCoin>`,
-        });
-        expect(Number(item.min_selling_price)).toBe(100);
-      }
-      else {
-        throw "Resource does not exist";
-      }
-    } catch (error) {
-      throw error;
-    }
-  });
+//       if (handle != null) {
+//         const item: AuctionItem = await client.getTableItem(handle, {
+//           key: key,
+//           key_type: "0x3::token::TokenId",
+//           value_type: `${moduleOwner.address()}::Auction::Item<0x1::aptos_coin::AptosCoin>`,
+//         });
+//         expect(Number(item.min_selling_price)).toBe(100);
+//       }
+//       else {
+//         throw "Resource does not exist";
+//       }
+//     } catch (error) {
+//       throw error;
+//     }
+//   });
 
-  it("can bid on auctioned item", async () => {
-    const data = [
-      alice.address(),
-      alice.address(),
-      aliceCollection.name,
-      aliceTokens[0].name,
-      0,
-      101,
-    ];
-    const payload = {
-      arguments: data,
-      function: `${moduleOwner.address()}::Auction::bid`,
-      type: "entry_function_payload",
-      type_arguments: ["0x1::aptos_coin::AptosCoin"],
-    };
-    try {
-      const transaction = await client.generateTransaction(
-        bob.address(),
-        payload
-      );
-      const signature = await client.signTransaction(bob, transaction);
-      const tx = await client.submitTransaction(signature);
-      await client.waitForTransaction(tx.hash, { checkSuccess: true });
-      const resource = await client.getAccountResource(
-        alice.address(),
-        `${moduleOwner.address()}::Auction::AuctionItem<0x1::aptos_coin::AptosCoin>`
-      );
-      const aliceData: Table = resource.data;
-      const handle = aliceData.items?.handle;
-      const tokenDataId: TokenDataId = {
-        creator: alice.address().toShortString(),
-        collection: aliceCollection.name,
-        name: aliceTokens[0].name,
-      };
-      const key: TokenId = {
-        token_data_id: tokenDataId,
-        property_version: "0",
-      };
-      if (handle != null) {
-        const item: AuctionItem = await client.getTableItem(handle, {
-          key: key,
-          key_type: "0x3::token::TokenId",
-          value_type: `${moduleOwner.address()}::Auction::Item<0x1::aptos_coin::AptosCoin>`,
-        });
-        expect(Number(item.current_bid?.value)).toBe(101);
-      }
-      else {
-        throw "Resource does not exist";
-      }
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  });
+//   it("can bid on auctioned item", async () => {
+//     const data = [
+//       alice.address(),
+//       alice.address(),
+//       aliceCollection.name,
+//       aliceTokens[0].name,
+//       0,
+//       101,
+//     ];
+//     const payload = {
+//       arguments: data,
+//       function: `${moduleOwner.address()}::Auction::bid`,
+//       type: "entry_function_payload",
+//       type_arguments: ["0x1::aptos_coin::AptosCoin"],
+//     };
+//     try {
+//       const transaction = await client.generateTransaction(
+//         bob.address(),
+//         payload
+//       );
+//       const signature = await client.signTransaction(bob, transaction);
+//       const tx = await client.submitTransaction(signature);
+//       await client.waitForTransaction(tx.hash, { checkSuccess: true });
+//       const resource = await client.getAccountResource(
+//         alice.address(),
+//         `${moduleOwner.address()}::Auction::AuctionItem<0x1::aptos_coin::AptosCoin>`
+//       );
+//       const aliceData: Table = resource.data;
+//       const handle = aliceData.items?.handle;
+//       const tokenDataId: TokenDataId = {
+//         creator: alice.address().toShortString(),
+//         collection: aliceCollection.name,
+//         name: aliceTokens[0].name,
+//       };
+//       const key: TokenId = {
+//         token_data_id: tokenDataId,
+//         property_version: "0",
+//       };
+//       if (handle != null) {
+//         const item: AuctionItem = await client.getTableItem(handle, {
+//           key: key,
+//           key_type: "0x3::token::TokenId",
+//           value_type: `${moduleOwner.address()}::Auction::Item<0x1::aptos_coin::AptosCoin>`,
+//         });
+//         expect(Number(item.current_bid?.value)).toBe(101);
+//       }
+//       else {
+//         throw "Resource does not exist";
+//       }
+//     } catch (error) {
+//       console.log(error);
+//       throw error;
+//     }
+//   });
 
-  it("can purchase after the auction is over", async () => {
-    // await sleep(4000);
-    const data = [
-      alice.address(),
-      alice.address(),
-      aliceCollection.name,
-      aliceTokens[0].name,
-      0,
-    ];
-    const payload = {
-      arguments: data,
-      function: `${moduleOwner.address()}::Auction::close_and_transfer`,
-      type: "entry_function_payload",
-      type_arguments: ["0x1::aptos_coin::AptosCoin"],
-    };
-    try {
-      const transaction = await client.generateTransaction(
-        bob.address(),
-        payload
-      );
-      const signature = await client.signTransaction(bob, transaction);
-      const tx = await client.submitTransaction(signature);
-      await client.waitForTransaction(tx.hash, { checkSuccess: true });
-      const tokenId = {
-        token_data_id: {
-          creator: alice.address().hex(),
-          collection: aliceCollection.name,
-          name: aliceTokens[0].name,
-        },
-        property_version: `0`,
-      };
-      const bobTokenBalance = await tokenClient.getTokenForAccount(
-        bob.address(),
-        tokenId
-      );
-      expect(Number(bobTokenBalance.amount)).toBe(1);
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  });
-});
+//   it("can purchase after the auction is over", async () => {
+//     // await sleep(4000);
+//     const data = [
+//       alice.address(),
+//       alice.address(),
+//       aliceCollection.name,
+//       aliceTokens[0].name,
+//       0,
+//     ];
+//     const payload = {
+//       arguments: data,
+//       function: `${moduleOwner.address()}::Auction::close_and_transfer`,
+//       type: "entry_function_payload",
+//       type_arguments: ["0x1::aptos_coin::AptosCoin"],
+//     };
+//     try {
+//       const transaction = await client.generateTransaction(
+//         bob.address(),
+//         payload
+//       );
+//       const signature = await client.signTransaction(bob, transaction);
+//       const tx = await client.submitTransaction(signature);
+//       await client.waitForTransaction(tx.hash, { checkSuccess: true });
+//       const tokenId = {
+//         token_data_id: {
+//           creator: alice.address().hex(),
+//           collection: aliceCollection.name,
+//           name: aliceTokens[0].name,
+//         },
+//         property_version: `0`,
+//       };
+//       const bobTokenBalance = await tokenClient.getTokenForAccount(
+//         bob.address(),
+//         tokenId
+//       );
+//       expect(Number(bobTokenBalance.amount)).toBe(1);
+//     } catch (error) {
+//       console.log(error);
+//       throw error;
+//     }
+//   });
+// });
 
 describe("Fixed Price Transaction", () => {
   it("can initialize listing", async () => {
@@ -432,6 +432,7 @@ describe("Fixed Price Transaction", () => {
       type: "entry_function_payload",
       type_arguments: ["0x1::aptos_coin::AptosCoin"],
     };
+    console.log('FUNCTION', payload.function)
     try {
       const transaction = await client.generateTransaction(
         alice.address(),
