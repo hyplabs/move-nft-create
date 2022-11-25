@@ -10,7 +10,7 @@
 }
 
 .main_create {
-  min-height: calc(100vh - 175px);
+  min-height: calc(1000px);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -201,16 +201,11 @@
 
 .placeholder_image {
   border-radius: 12px;
-  aspect-ratio: 1/1;
   margin-inline: auto;
-  vertical-align: middle;
+  vertical-align: top;
   place-items: center;
   justify-content: center;
   position: relative;
+  height:100%;
 }
 
-.placeholder_image img {
-  top: 50%;
-  position:absolute;
-  transform: translate(0%, -50%);
-}

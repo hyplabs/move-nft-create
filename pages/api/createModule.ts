@@ -1,29 +1,18 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 import {
   AptosClient,
   AptosAccount,
-  CoinClient,
-  TokenClient,
-  FaucetClient,
   HexString,
   TxnBuilderTypes,
-  BCS,
 } from "aptos";
 import * as fs from "fs";
+import { NODE_URL } from '../../utils/constants';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   try {
-    //////////////////////////////////////////////////////////
-    const NODE_URL = "http://127.0.0.1:8080";
-    const FAUCET_URL = "http://127.0.0.1:8081";
-    // const NODE_URL: string = "https://fullnode.devnet.aptoslabs.com/v1/"
-    // const FAUCET_URL = "https://faucet.devnet.aptoslabs.com"
-
-    const alice = new AptosAccount();
     const client = new AptosClient(NODE_URL);
 
     let moduleOwner: AptosAccount;
@@ -36,11 +25,15 @@ export default async function handler(
     };
     moduleOwner = AptosAccount.fromAptosAccountObject(moduleOwnerKeys);
 
-    const faucetClient = new FaucetClient(NODE_URL, FAUCET_URL);
-
-    const initialFund = 100_000_000;
-    await faucetClient.fundAccount(moduleOwner.address(), initialFund);
-    await faucetClient.fundAccount(alice.address(), initialFund);
+    const modules = await client.getAccountModules(moduleOwner.address());
+    const hasFixedPriceModule = modules.some(
+      (m) => m.abi?.name === "FixedPriceSale"
+    );
+    const hasAuctionModule = modules.some((m) => m.abi?.name === "Auction");
+    console.log('hasFixedPriceModule', hasFixedPriceModule)
+    console.log('hasAuctionModule', hasAuctionModule)
+    
+    if (hasAuctionModule && hasFixedPriceModule)  return res.status(200);;
 
     // Publish module
     const packageMetadata = fs.readFileSync(
@@ -52,7 +45,6 @@ export default async function handler(
     const moduleData1 = fs.readFileSync(
       "./build/marketplace/bytecode_modules/Auction.mv"
     );
-    console.log("yooo");
 
     let txnHash = await client.publishPackage(
       moduleOwner,
@@ -66,23 +58,13 @@ export default async function handler(
         ),
       ]
     );
-    console.log("published hash: ", txnHash);
     try {
       await client.waitForTransaction(txnHash, { checkSuccess: true });
+      return res.status(200);
     } catch (error) {
       console.log(error);
       throw error;
     }
-    const modules = await client.getAccountModules(moduleOwner.address());
-    const hasFixedPriceModule = modules.some(
-      (m) => m.abi?.name === "FixedPriceSale"
-    );
-    const hasAuctionModule = modules.some((m) => m.abi?.name === "Auction");
-    console.log('hasFixedPriceModule', hasFixedPriceModule)
-    console.log('hasAuctionModule', hasAuctionModule)
-    // expect(hasFixedPriceModule).toBe(true);
-    // expect(hasAuctionModule).toBe(true);
-    return res.status(200).end();
   } catch (e) {
     console.error(e);
     return res.status(400).json({ error: e });

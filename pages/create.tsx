@@ -3,28 +3,18 @@ import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { connectWallet, getAptosWallet, getCurrentLocalDateTime } from "../utils/helper";
+import { connectWallet, getAptosWallet, getCurrentLocalDateTime, getFixedPriceSalePayload, getAuctionHousePayload } from "../utils/helper";
 import { useForm } from "react-hook-form";
 import { AptosClient } from "aptos";
 import { Nullable, SaleType, Collection } from "../utils/types";
 import placeholderImg from 'public/images/placeholder.png';
-
-const APTOS_COIN_VALUE = 100_000_000;
-
-const MODULE_OWNER_ADDRESS =
-  "0x7f3d5a9cb25dcd7b3f9a73d266b96b62c13e0326abc0755c7f619ed2b908e98f";
-
-  const NODE_URL = "http://127.0.0.1:8080";
-  // const NODE_URL: string = "https://fullnode.devnet.aptoslabs.com/v1/"
+import { NODE_URL } from "../utils/constants";
 
 export default function Create() {
   const {
     handleSubmit,
     register,
     formState: { errors },
-    getValues,
-    setError,
-    clearErrors,
     setValue,
   } = useForm();
   const [address, setAddress] = useState<Nullable<string>>(null);
@@ -53,15 +43,12 @@ export default function Create() {
   }, []);
 
   const onSubmit = (values: any) => {
-    console.log("onSubmit");
     setErrorMessage('');
     if (isConnected) createCollection(values as Collection);
     else connectWallet(setAddress);
   };
 
   const createCollection = async (collection: Collection) => {
-    console.log("creating collection...", collection);
-
     if (address === null) throw "Please connect your wallet";
     setIsLoading(true);
 
@@ -75,8 +62,8 @@ export default function Create() {
     const client = new AptosClient(NODE_URL);
     const payload =
       collection.saleType === SaleType.FIXED
-        ? getFixedPriceSalePayload(collection)
-        : getAuctionHousePayload(collection);
+        ? getFixedPriceSalePayload(collection, address)
+        : getAuctionHousePayload(collection, address);
 
     try {
       const pendingTransaction = await window.aptos.signAndSubmitTransaction(
@@ -94,68 +81,7 @@ export default function Create() {
       else throw error;
     }
   };
-
-  const getFixedPriceSalePayload = (collection: Collection) => {
-    const data = [
-      collection.name, // collection name
-      collection.description, // collection description
-      collection.media, // collection uri
-      collection.editions ?? 1000, // collection maximum
-      [false, false, false], // collection mutate settings
-      collection.symbol, // token name
-      collection.description, //token description
-      collection.media, //token uri
-      address, // royalty payee address
-      100, // royalty points denominator
-      0, // royalty points numerator - set to 0 for no royalties to be paid to royalty address
-      [false, false, false, false, false], // token mutate setting
-      [], // property keys
-      [], // property values
-      [], // property types
-      collection.price * APTOS_COIN_VALUE, // listing price
-      0, // expiration time (ms), if expirationTime is 0 -> sale will last forever
-    ];
-    const payload = {
-      arguments: data,
-      function: `${MODULE_OWNER_ADDRESS}::FixedPriceSale::create_collection_token_and_list`,
-      type: "entry_function_payload",
-      type_arguments: ["0x1::aptos_coin::AptosCoin"],
-    };
-    return payload;
-  };
-
-  const getAuctionHousePayload = (collection: Collection) => {
-    const now = new Date();
-    const endDate = collection.endDate && Date.parse(collection.endDate ?? '') !== NaN ? new Date(collection.endDate): null;
-    const expirationTime = endDate === null ? 0 : endDate.getTime() - now.getTime();
-    const data = [
-      collection.name, // collection name
-      collection.description, // collection description
-      collection.media, // collection uri
-      collection.editions ?? 1000, // collection maximum
-      [false, false, false], // collection mutate settings
-      collection.symbol, // token name
-      collection.description, //token description
-      collection.media, //token uri
-      address, // royalty payee address
-      100, // royalty points denominator
-      0, // royalty points numerator - set to 0 for no royalties to be paid to royalty address
-      [false, false, false, false, false], // token mutate setting
-      [], // property keys
-      [], // property values
-      [], // property types
-      collection.price * APTOS_COIN_VALUE, // listing price
-      expirationTime > 0 ? expirationTime : 0, // expiration time (ms), if expirationTime is 0 -> sale will last forever
-    ];
-    const payload = {
-      arguments: data,
-      function: `${MODULE_OWNER_ADDRESS}::FixedPriceSale::create_collection_token_and_initialize_auction`,
-      type: "entry_function_payload",
-      type_arguments: ["0x1::aptos_coin::AptosCoin"],
-    };
-    return payload;
-  };
-  console.log('errors.price', errors.price)
+  
   return (
     <div className={styles.container}>
       <Head>
@@ -169,8 +95,11 @@ export default function Create() {
       />
       <main className={styles.main_create}>
         {/* Collection preview on left half of screen */}
-        <div className="w-full lg:w-1/2 lg:pr-16 font-medium pt-14 space-y-5 md:border-r-2 min-h-[58rem]">
-          <div className={styles.placeholder_image} style={{ aspectRatio: 1/1 }}>
+        <div className="w-full lg:w-1/2 lg:pr-16 font-medium pt-14 space-y-5 md:border-r-2 md:min-h-[64rem]">
+          <div className={styles.placeholder_image} style={{
+            // aspectRatio: 1/1,
+            height: 'fit-content',
+            }}>
             <img src={mediaUrl || placeholderImg.src} className="border-2 rounded-xl my-auto w-full"/>
           </div>
           <h2 className="text-4xl pt-6">{name}</h2>
@@ -179,7 +108,7 @@ export default function Create() {
             <div className="my-auto">EDITION OF {editions}</div>
           </div>
           <p className="text-md font-normal text-gray-500 ">{description}</p>
-          <div className="flex flex-row space-x-6 pb-16">
+          <div className="flex flex-row space-x-6 md:pb-16">
             <div>
               <div className="text-md">EDITION {saleType === SaleType.AUCTION && 'MIN '}PRICE</div>
               <div className="font-bold text-2xl">{price} APTOS</div>
@@ -284,7 +213,6 @@ export default function Create() {
                 <div className={styles.input_title}>{saleType === SaleType.FIXED ? 'Price' : 'Min Price'}</div>
                 <div className={`${styles.input_container} ${errors.price && styles.invalid}`}>
                   <input
-                    // type="number"
                     placeholder="0.01"
                     {...register("price", {
                       required: true,
@@ -292,9 +220,6 @@ export default function Create() {
                           value: /^((\d+(\.\d*)?)|(\.\d+))$/,
                           message: 'Please enter a number',
                       },
-                      // pattern: /^((\d+(\.\d*)?)|(\.\d+))$/,
-                      // validate: (value) => value && value > 0,
-                      // valueAsNumber: true,
                     })}
                     className={styles.price}
                     onChange={(e) => setPrice(Number(e.target.value) || 0)}
@@ -367,7 +292,6 @@ export default function Create() {
                     type="submit"
                     value={isConnected ? "Create Collection" : "Connect Wallet"}
                     className={`w-full hover:cursor-pointer`}
-                    // onClick={handleConnect}
                     disabled={isLoading}
                   />
                 )}
