@@ -15,6 +15,7 @@ module Marketplace::FixedPriceSale {
     use aptos_framework::event;
 
     const EITEM_ALREADY_EXISTS: u64 = 0;
+    const ECOLLECTION_ITEM_ALREADY_EXISTS: u64 = 10;
     const ESELLER_DOESNT_OWN_TOKEN: u64 = 1;
     const EINVALID_BALANCE: u64 = 2;
     const EITEM_NOT_LISTED: u64 = 3;
@@ -178,7 +179,7 @@ module Marketplace::FixedPriceSale {
             property_types
         );   
         let token_id = token::create_token_id_raw(creator_addr, string::utf8(collection_name), string::utf8(token_name), 0);
-        assert!(!exists<ListingItem<CoinType>>(creator_addr), EITEM_ALREADY_EXISTS);
+        assert!(!exists<ListingItem<CoinType>>(creator_addr), ECOLLECTION_ITEM_ALREADY_EXISTS);
         // Check if the seller actually owns the NFT
         assert!(token::balance_of(creator_addr, token_id) > 0, ESELLER_DOESNT_OWN_TOKEN);
 

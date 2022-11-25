@@ -4,9 +4,10 @@ import {
   AptosAccount,
   HexString,
   TxnBuilderTypes,
+  FaucetClient,
 } from "aptos";
 import * as fs from "fs";
-import { NODE_URL } from '../../utils/constants';
+import { NODE_URL, FAUCET_URL } from '../../utils/constants';
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,15 +26,8 @@ export default async function handler(
     };
     moduleOwner = AptosAccount.fromAptosAccountObject(moduleOwnerKeys);
 
-    const modules = await client.getAccountModules(moduleOwner.address());
-    const hasFixedPriceModule = modules.some(
-      (m) => m.abi?.name === "FixedPriceSale"
-    );
-    const hasAuctionModule = modules.some((m) => m.abi?.name === "Auction");
-    console.log('hasFixedPriceModule', hasFixedPriceModule)
-    console.log('hasAuctionModule', hasAuctionModule)
-    
-    if (hasAuctionModule && hasFixedPriceModule)  return res.status(200);;
+    const faucetClient = new FaucetClient(NODE_URL, FAUCET_URL);
+    await faucetClient.fundAccount(moduleOwner.address(), 100_000_000);
 
     // Publish module
     const packageMetadata = fs.readFileSync(
@@ -45,7 +39,7 @@ export default async function handler(
     const moduleData1 = fs.readFileSync(
       "./build/marketplace/bytecode_modules/Auction.mv"
     );
-
+    
     let txnHash = await client.publishPackage(
       moduleOwner,
       new HexString(packageMetadata.toString("hex")).toUint8Array(),
@@ -60,13 +54,13 @@ export default async function handler(
     );
     try {
       await client.waitForTransaction(txnHash, { checkSuccess: true });
-      return res.status(200);
+      res.status(200).send({ status: 'OK' });
     } catch (error) {
-      console.log(error);
-      throw error;
+      console.error(error);
+      return res.status(400).json({ error });
     }
-  } catch (e) {
-    console.error(e);
-    return res.status(400).json({ error: e });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ error });
   }
 }

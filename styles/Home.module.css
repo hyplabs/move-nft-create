@@ -209,3 +209,20 @@
   height:100%;
 }
 
+.tx_modal {
+  margin-block: auto;
+  height: 210px;
+  width: 500px;
+  background-color: white;
+  border-color: #eaeaea;
+  border-radius: 5px;
+  border-width: 2px;;
+  position: absolute;
+  top:0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  vertical-align: middle;
+  padding: 20px;
+}
