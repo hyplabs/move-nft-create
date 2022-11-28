@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { AptosClient } from "aptos";
 import { Nullable, SaleType, Collection } from "../utils/types";
 import placeholderImg from 'public/images/placeholder.png';
-import { NODE_URL } from "../utils/constants";
+import { NODE_URL, CURRENT_NETWORK } from "../utils/constants";
 import Modal from "react-modal";
 
 export default function Create() {
@@ -354,7 +354,7 @@ export default function Create() {
             <div>
               <div className="my-6">
                 Tx Hash:{` `}
-                <a href={`https://explorer.aptoslabs.com/txn/${txHash}`} target="_blank" rel="noreferrer" className="text-blue-600">
+                <a href={`https://explorer.aptoslabs.com/txn/${txHash}?network=${CURRENT_NETWORK}`} target="_blank" rel="noreferrer" className="text-blue-600">
                   {trimAddress(txHash)}
                 </a>
               </div>

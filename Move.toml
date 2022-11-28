@@ -4,7 +4,7 @@ version = '1.0.0'
 upgrade_policy = "compatible"
 
 [addresses]
-Marketplace = "dadf473807397f6e95415b8605846bc4ee4659e92b5297a05ad4e5a29ed7455d"
+Marketplace = "b027632b7d00f81353d5380edfeb7b636c65c1fd653e2bb01628c06d6dbe1b6c"
 
 [dependencies]
 AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework/", rev="devnet"}
