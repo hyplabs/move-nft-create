@@ -52,7 +52,7 @@ aptos move publish --profile newAccount
 ```
 The aptos init creates a new keypair using which the module can be published.
 Note: Publishing the module with the current address wont be possible since the auth key is not present. You would have to create a new keypair and then
-replace it in move.toml and MODULE_OWNER_ADDRESS in [`utils/constants.ts`] to continue.
+replace it in move.toml and MODULE_OWNER_ADDRESS in [`utils/constants.ts`](./utils/constants.ts) to continue.
 
 ## Learn More
 
