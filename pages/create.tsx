@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Navbar from "../components/Navbar";
 import { connectWallet, getAptosWallet, getCurrentLocalDateTime, getFixedPriceSalePayload, getAuctionHousePayload, trimAddress } from "../utils/helper";
 import { useForm } from "react-hook-form";
@@ -18,6 +18,7 @@ export default function Create() {
     formState: { errors },
     setValue,
   } = useForm();
+  Modal.setAppElement('*');
   const [address, setAddress] = useState<Nullable<string>>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [name, setName] = useState<string>('Collection Name');
@@ -55,12 +56,12 @@ export default function Create() {
     if (address === null) throw "Please connect your wallet";
     setIsLoading(true);
 
-    const response = await fetch("/api/createModule");
-    if (response.status !== 200) {
-      setIsLoading(false);
-      setErrorMessage("Error creating module");
-      throw "Error creating module";
-    };
+    // const response = await fetch("/api/createModule");
+    // if (response.status !== 200) {
+    //   setIsLoading(false);
+    //   setErrorMessage("Error creating module");
+    //   throw "Error creating module";
+    // };
     setTxModalOpen(true);
 
     const client = new AptosClient(NODE_URL);
@@ -70,12 +71,16 @@ export default function Create() {
         : getAuctionHousePayload(collection, address);
 
     try {
+      console.log('payload', payload);
       const pendingTransaction = await window.aptos.signAndSubmitTransaction(
         payload
       );
+      console.log('pendingTransaction', pendingTransaction);
       const txn = await client.waitForTransactionWithResult(
         pendingTransaction.hash
       );
+      console.log('txn', txn);
+
       
       setTxHash(txn.hash);
       setIsLoading(false);
@@ -97,6 +102,22 @@ export default function Create() {
       <span className="sr-only">Loading...</span>
     </div>
   );
+
+  const media = useMemo(() => {
+    return (
+      <div className={styles.placeholder_image} style={{
+        height: 'fit-content',
+        }}>
+        {mediaUrl.includes(".mp4") ? (
+          <video width="750" height="500" autoPlay muted controls key={mediaUrl} className="border-2 rounded-xl my-auto w-full">
+            <source src={mediaUrl} type="video/mp4"/>
+          </video>
+        ) : (
+          <img key={mediaUrl} src={mediaUrl || placeholderImg.src} className="border-2 rounded-xl my-auto w-full"/>
+        )}
+      </div>
+    );
+  }, [mediaUrl]);
   
   return (
     <div className={styles.container}>
@@ -112,12 +133,7 @@ export default function Create() {
       <main className={styles.main_create}>
         {/* Collection preview on left half of screen */}
         <div className="w-full lg:w-1/2 lg:pr-16 font-medium pt-14 space-y-5 md:border-r-2 md:min-h-[64rem]">
-          <div className={styles.placeholder_image} style={{
-            // aspectRatio: 1/1,
-            height: 'fit-content',
-            }}>
-            <img src={mediaUrl || placeholderImg.src} className="border-2 rounded-xl my-auto w-full"/>
-          </div>
+          {media}
           <h2 className="text-4xl pt-6">{name}</h2>
           <div className="flex text-md space-x-6">
             <div className="bg-black text-white py-1 px-2 rounded">${symbol}</div>

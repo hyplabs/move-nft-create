@@ -19,10 +19,10 @@ export default async function handler(
     let moduleOwner: AptosAccount;
     const moduleOwnerKeys = {
       address:
-        "0x7f3d5a9cb25dcd7b3f9a73d266b96b62c13e0326abc0755c7f619ed2b908e98f",
+        "0xab7036d176ed868bd75586b2470af9b18cccb21340489191c08e49627df54466",
       publicKeyHex:
-        "0x12fcf065ffbea809331f69f03baf32c023b8630683e1533f71ca09e12e2c722f",
-      privateKeyHex: `0x45bbfbcc3f1b3fc66c2c0a604e2f71462fc9c4825d4a83beab7a0609f1c4f4ab`,
+        "0xbb458d309e9d465dba16cdd056fb7e3cbba661728a0a74641b64a922d4ff1398",
+      privateKeyHex: `0x92c7fd75f5864c95ae199c6db84975bc5dad7cdb454070eed711e9059e79ddb9`,
     };
     moduleOwner = AptosAccount.fromAptosAccountObject(moduleOwnerKeys);
 

@@ -12,10 +12,10 @@ import * as fs from "fs";
 import { sha3_256 } from "@noble/hashes/sha3";
 import { exec } from "child_process";
 
-// const NODE_URL = "http://127.0.0.1:8080";
-// const FAUCET_URL = "http://127.0.0.1:8081";
-const NODE_URL: string = "https://fullnode.devnet.aptoslabs.com/v1/"
-const FAUCET_URL = "https://faucet.devnet.aptoslabs.com"
+const NODE_URL = "http://127.0.0.1:8080";
+const FAUCET_URL = "http://127.0.0.1:8081";
+// const NODE_URL: string = "https://fullnode.devnet.aptoslabs.com/v1/"
+// const FAUCET_URL = "https://faucet.devnet.aptoslabs.com"
 let alice: AptosAccount;
 let bob: AptosAccount;
 let cas: AptosAccount;
@@ -30,6 +30,11 @@ const initialFund = 100_000_000;
 const aliceCollection = {
   name: "alice collection",
   description: "this is alice collection",
+  uri: "https://xyz.com",
+};
+const aliceCollection1 = {
+  name: "alice collection1",
+  description: "this is alice collection1",
   uri: "https://xyz.com",
 };
 const bobCollection = {
@@ -53,6 +58,12 @@ const aliceTokens = [
   {
     name: "second token",
     description: "This is my second token",
+    uri: "https://xyz.com",
+    supply: 1,
+  },
+  {
+    name: "third token",
+    description: "This is my third token",
     uri: "https://xyz.com",
     supply: 1,
   },
@@ -129,10 +140,10 @@ describe("set up account, mint tokens and publish module", () => {
     // if (NODE_URL === "")
     const moduleOwnerKeys = {
       address:
-        "0x7f3d5a9cb25dcd7b3f9a73d266b96b62c13e0326abc0755c7f619ed2b908e98f",
+        "d5894eebd8e564f442f05f2ba590a110c3ff76be1c4969669159f42456987ee2",
       publicKeyHex:
-        "0x12fcf065ffbea809331f69f03baf32c023b8630683e1533f71ca09e12e2c722f",
-      privateKeyHex: `0x45bbfbcc3f1b3fc66c2c0a604e2f71462fc9c4825d4a83beab7a0609f1c4f4ab`,
+        "0x3cbc30a9cdbcbb0c46feed4944aa945f51d46875adc7bd90ce5e32c166982d62",
+      privateKeyHex: `0x097c8a4a532d0fab2e44eab90776e41b5bea38d0bf54a5c3e9c48e5f53ba1231`,
     };
 
     moduleOwner = AptosAccount.fromAptosAccountObject(moduleOwnerKeys);
@@ -169,6 +180,18 @@ describe("set up account, mint tokens and publish module", () => {
         aliceCollection.name
       );
       expect(collectionData.name).toBe(aliceCollection.name);
+      const tx1 = await tokenClient.createCollection(
+        alice,
+        aliceCollection1.name,
+        aliceCollection1.description,
+        aliceCollection1.uri
+      );
+      await client.waitForTransaction(tx1);
+      const collectionData1 = await tokenClient.getCollectionData(
+        alice.address(),
+        aliceCollection1.name
+      );
+      expect(collectionData1.name).toBe(aliceCollection1.name);
     } catch (error) {
       console.log(error);
       throw error;
@@ -461,6 +484,68 @@ describe("Fixed Price Transaction", () => {
 
       if (handle != null) {
         const item: ListingItem = await client.getTableItem(handle, {
+          key: key,
+          key_type: "0x3::token::TokenId",
+          value_type: `${moduleOwner.address()}::FixedPriceSale::Item<0x1::aptos_coin::AptosCoin>`,
+        });
+        expect(Number(item.list_price)).toBe(100);
+      }
+      else {
+        throw "Resource does not exist";
+      }
+    } catch (error) {
+      throw error;
+    }
+
+    
+
+
+    
+    // For a custom transaction, pass the function name with deployed address
+    // syntax: deployed_address::module_name::struct_name
+    const data1 = [
+      alice.address(),
+      aliceCollection1.name,
+      aliceTokens[2].name,
+      100,
+      8000000,
+      0,
+    ];
+    const payload1 = {
+      arguments: data,
+      function: `${moduleOwner.address()}::FixedPriceSale::list_token`,
+      type: "entry_function_payload",
+      type_arguments: ["0x1::aptos_coin::AptosCoin"],
+    };
+    console.log('FUNCTION', payload1.function)
+    try {
+      const transaction1 = await client.generateTransaction(
+        alice.address(),
+        payload1
+      );
+      const signature1 = await client.signTransaction(alice, transaction1);
+      const tx1 = await client.submitTransaction(signature1);
+      await client.waitForTransaction(tx1.hash, { checkSuccess: true });
+      const resource1 = await client.getAccountResource(
+        alice.address(),
+        `${moduleOwner.address()}::FixedPriceSale::ListingItem<0x1::aptos_coin::AptosCoin>`
+      );
+      const aliceData1: Table = resource1.data;
+      const handle1 = aliceData1.items?.handle;
+
+      const tokenDataId1: TokenDataId = {
+        creator: alice.address().toShortString(),
+        collection: aliceCollection1.name,
+        name: aliceTokens[2].name,
+      };
+
+      const key: TokenId = {
+        token_data_id: tokenDataId1,
+        property_version: "0",
+      };
+
+      if (handle1 != null) {
+        const item: ListingItem = await client.getTableItem(handle1, {
           key: key,
           key_type: "0x3::token::TokenId",
           value_type: `${moduleOwner.address()}::FixedPriceSale::Item<0x1::aptos_coin::AptosCoin>`,
