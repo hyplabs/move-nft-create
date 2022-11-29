@@ -49,7 +49,7 @@ export const getFixedPriceSalePayload = (collection: Collection, walletAddress: 
     collection.name, // collection name
     collection.description, // collection description
     collection.media, // collection uri
-    collection.editions ?? 1000, // collection maximum
+    collection.editions || 1000, // collection maximum
     [false, false, false], // collection mutate settings
     collection.symbol, // token name
     collection.description, //token description
@@ -81,7 +81,7 @@ export const getAuctionHousePayload = (collection: Collection, walletAddress: st
     collection.name, // collection name
     collection.description, // collection description
     collection.media, // collection uri
-    collection.editions ?? 1000, // collection maximum
+    collection.editions || 1000, // collection maximum
     [false, false, false], // collection mutate settings
     collection.symbol, // token name
     collection.description, //token description

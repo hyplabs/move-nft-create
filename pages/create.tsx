@@ -55,13 +55,6 @@ export default function Create() {
   const createCollection = async (collection: Collection) => {
     if (address === null) throw "Please connect your wallet";
     setIsLoading(true);
-
-    // const response = await fetch("/api/createModule");
-    // if (response.status !== 200) {
-    //   setIsLoading(false);
-    //   setErrorMessage("Error creating module");
-    //   throw "Error creating module";
-    // };
     setTxModalOpen(true);
 
     const client = new AptosClient(NODE_URL);
@@ -71,17 +64,12 @@ export default function Create() {
         : getAuctionHousePayload(collection, address);
 
     try {
-      console.log('payload', payload);
       const pendingTransaction = await window.aptos.signAndSubmitTransaction(
         payload
       );
-      console.log('pendingTransaction', pendingTransaction);
       const txn = await client.waitForTransactionWithResult(
         pendingTransaction.hash
       );
-      console.log('txn', txn);
-
-      
       setTxHash(txn.hash);
       setIsLoading(false);
       setErrorMessage('');
@@ -306,8 +294,9 @@ export default function Create() {
               })}
               className={styles.input}
               onChange={(e) => {
-                setEditions(Number(e.target.value) || 1000)}
-              }
+                const newEdition = e.target.value && Number(e.target.value) > 0 ? Number(e.target.value) : 1000;
+                setEditions(newEdition)
+              }}
             />
             {/* Create Collection Button */}
             <div className={`${isLoading ? 'cursor-not-allowed':'hover:bg-gray-800'} bg-black text-white font-medium py-2.5 rounded w-full mt-12`}>
