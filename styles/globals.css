@@ -53,6 +53,12 @@ nav{
   border-radius: 2px;
 }
 
+.searchbar-holder{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .center{
   min-height: 600px;
   display: flex;

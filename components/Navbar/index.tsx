@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { Nullable } from '../../utils/types';
 import { trimAddress, getAptosWallet, connectWallet, disconnectWallet } from "../../utils/helper";
 import { AptosAccount } from "aptos";
+import SearchBar from "../SearchBar";
 
 export type NavbarProps = {
   setAddress: (address: Nullable<string>) => void;
@@ -29,9 +30,12 @@ const Navbar: React.FC<NavbarProps> = ({ setAddress, address }) => {
   return (
     <header className="bg-white px-10 border-b-2">
       <nav className={`nav`}>
-        <Link href={"/"}>
+        <div className="searchbar-holder">
+        <Link href={"/"} className="mr-20">
           <h1 className="logo">Move NFT Create</h1>
         </Link>
+        <SearchBar/>
+        </div>
         <div className={`nav__menu-list`}>
           <div>
             <div>
