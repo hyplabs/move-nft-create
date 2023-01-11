@@ -10,6 +10,7 @@ import { Nullable, SaleType, Collection } from "../utils/types";
 import placeholderImg from 'public/images/placeholder.png';
 import { NODE_URL, CURRENT_NETWORK } from "../utils/constants";
 import Modal from "react-modal";
+import CollectionTable from "../components/CollectionTable";
 
 export default function Create() {
   const {
@@ -44,13 +45,26 @@ export default function Create() {
       </Head>
     <Navbar/>
 
-    <main>
+    <main className={styles.main}>
         <h1 className={styles.title}>
         Collections
         </h1>
         <div className="grid place-items-center mt-10">Top collection ranked by floor price and and volumen</div>
         <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+        <CollectionTable/>
       </main>
-    
+      <footer className={styles.footer}>
+        <a
+          href="https://hypotenuse.ca/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          @ NFTY
+          <span className={styles.logo}>
+            <Image src="/favicon.ico" alt="Hype Logo" width={19} height={19} />
+          </span>
+        </a>
+      </footer>
+
   </>);
 }

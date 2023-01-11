@@ -38,7 +38,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          @ Hypotenuse Labs
+          @ NFTY
           <span className={styles.logo}>
             <Image src="/favicon.ico" alt="Hype Logo" width={19} height={19} />
           </span>
