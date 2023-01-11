@@ -37,6 +37,17 @@ const Navbar: React.FC<NavbarProps> = ({ setAddress, address }) => {
         <SearchBar/>
         </div>
         <div className={`nav__menu-list`}>
+          <div className="links-holder">
+        <Link href={"/explore"} className="mr-20">
+          <h1 className="logo">Explore</h1>
+        </Link>
+        <Link href={"/collections"} className="mr-20">
+          <h1 className="logo">Collections</h1>
+        </Link>
+        <Link href={"/profile"} className="mr-20">
+          <h1 className="logo">Profile</h1>
+        </Link>
+        </div>
           <div>
             <div>
               <button

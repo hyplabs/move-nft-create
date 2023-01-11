@@ -57,6 +57,13 @@ nav{
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 50vw;
+}
+
+.links-holder{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .center{
