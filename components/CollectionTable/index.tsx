@@ -9,7 +9,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-
 function createData(
     collection: string,
     floor: number,
@@ -38,15 +37,15 @@ const CollectionTable = () => {
   useEffect(() => {}, []);
 
   return (
-    <TableContainer component={Paper} style={{ "width": "70vw" }} > 
+    <TableContainer  style={{ "width": "70vw" }} > 
       <Table aria-label="collections table">
         <TableHead>
           <TableRow>
-            <TableCell>Collection</TableCell>
-            <TableCell align="right">Floor</TableCell>
-            <TableCell align="right">24h Vol</TableCell>
-            <TableCell align="right">Owners</TableCell>
-            <TableCell align="right">Items</TableCell>
+            <TableCell align="left">Collection</TableCell>
+            <TableCell align="left">Floor</TableCell>
+            <TableCell align="left">24h Vol</TableCell>
+            <TableCell align="left">Owners</TableCell>
+            <TableCell align="left">Items</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -55,13 +54,17 @@ const CollectionTable = () => {
               key={row.name}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
-              <TableCell component="th" scope="row">
+              <TableCell component="th" scope="row" align="left" style={{"width":"30%"}}>
+              <div className="collection-name-table-row">
+              <img className="mr-5" alt="collection image" src="https://looksrare.mo.cloudinary.net/0x656D34A8309363302e46De99853F4cef30B85A1D/0x9c910484ca91f1e4169a247dc4ced55e6b73faacedc2f40532a3e786d954e674?resource_type=image&f=auto&c=limit&w=40&q=auto" 
+              />
                 <b>{row.collection}</b> 
+                </div>
               </TableCell>
-              <TableCell align="right"><b>{row.floor}</b></TableCell>
-              <TableCell align="right"><b>{row.vol}</b> </TableCell>
-              <TableCell align="right"><b>{row.owner}</b></TableCell>
-              <TableCell align="right"><b> {row.items}</b></TableCell>
+              <TableCell align="left"><b>{row.floor}</b></TableCell>
+              <TableCell align="left"><b>{row.vol}</b> </TableCell>
+              <TableCell align="left"><b>{row.owner}</b></TableCell>
+              <TableCell align="left"><b> {row.items}</b></TableCell>
             </TableRow>
           ))}
         </TableBody>

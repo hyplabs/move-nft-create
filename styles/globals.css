@@ -66,8 +66,10 @@ nav{
   align-items: center;
 }
 
-.collection-table{
-  width: 50vw;
+.collection-name-table-row{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .center{
