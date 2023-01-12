@@ -20,16 +20,16 @@ function createData(
   }
 
   const rows = [
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-    createData('Eclair', 262, 16.0, 24, 6.0),
-    createData('Cupcake', 305, 3.7, 67, 4.3),
-    createData('Gingerbread', 356, 16.0, 49, 3.9),
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-    createData('Eclair', 262, 16.0, 24, 6.0),
-    createData('Cupcake', 305, 3.7, 67, 4.3),
-    createData('Gingerbread', 356, 16.0, 49, 3.9),
+    createData('Frozen yoghurt', 159, 6.0, 24, 1000),
+    createData('Ice cream sandwich', 237, 9.0, 37, 1000),
+    createData('Eclair', 262, 16.0, 24, 1000),
+    createData('Cupcake', 305, 3.7, 67, 1000),
+    createData('Gingerbread', 356, 16.0, 49, 1000),
+    createData('Frozen yoghurt', 159, 6.0, 24, 1000),
+    createData('Ice cream sandwich', 237, 9.0, 37, 1000),
+    createData('Eclair', 262, 16.0, 24, 1000),
+    createData('Cupcake', 305, 3.7, 67, 1000),
+    createData('Gingerbread', 356, 16.0, 49, 1000),
   ];
 
 const CollectionTable = () => {
@@ -52,7 +52,11 @@ const CollectionTable = () => {
           {rows.map((row) => (
             <TableRow
               key={row.name}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              sx={{ '&:last-child td, &:last-child th': { border: 0 },
+              "&:hover": {
+                backgroundColor: "#f7f9fc !important"
+              } }}
+              style={{cursor:"pointer"}}
             >
               <TableCell component="th" scope="row" align="left" style={{"width":"30%"}}>
               <div className="collection-name-table-row">
