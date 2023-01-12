@@ -66,6 +66,10 @@ nav{
   align-items: center;
 }
 
+.collection-table{
+  width: 50vw;
+}
+
 .center{
   min-height: 600px;
   display: flex;

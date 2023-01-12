@@ -11,16 +11,21 @@ import Paper from '@mui/material/Paper';
 
 
 function createData(
-    name: string,
-    calories: number,
-    fat: number,
-    carbs: number,
-    protein: number,
+    collection: string,
+    floor: number,
+    vol: number,
+    owner: number,
+    items: number,
   ) {
-    return { name, calories, fat, carbs, protein };
+    return { collection, floor, vol, owner, items };
   }
 
   const rows = [
+    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    createData('Eclair', 262, 16.0, 24, 6.0),
+    createData('Cupcake', 305, 3.7, 67, 4.3),
+    createData('Gingerbread', 356, 16.0, 49, 3.9),
     createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
     createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
     createData('Eclair', 262, 16.0, 24, 6.0),
@@ -33,8 +38,8 @@ const CollectionTable = () => {
   useEffect(() => {}, []);
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+    <TableContainer component={Paper} style={{ "width": "70vw" }} > 
+      <Table aria-label="collections table">
         <TableHead>
           <TableRow>
             <TableCell>Collection</TableCell>
@@ -51,12 +56,12 @@ const CollectionTable = () => {
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row">
-                {row.name}
+                <b>{row.collection}</b> 
               </TableCell>
-              <TableCell align="right">{row.calories}</TableCell>
-              <TableCell align="right">{row.fat}</TableCell>
-              <TableCell align="right">{row.carbs}</TableCell>
-              <TableCell align="right">{row.protein}</TableCell>
+              <TableCell align="right"><b>{row.floor}</b></TableCell>
+              <TableCell align="right"><b>{row.vol}</b> </TableCell>
+              <TableCell align="right"><b>{row.owner}</b></TableCell>
+              <TableCell align="right"><b> {row.items}</b></TableCell>
             </TableRow>
           ))}
         </TableBody>
