@@ -1,24 +1,30 @@
 
-import { FormControl, FormControlLabel, InputLabel, NativeSelect } from "@mui/material";
+import { FormControl, FormControlLabel, InputLabel, MenuItem, NativeSelect, Select, SelectChangeEvent } from "@mui/material";
 import React, { useRef, useEffect, useState } from "react";
 
 const CollectionDropDown = () => {
 
-  useEffect(() => {}, []);
+  const [timeSpan, setTimeSpan] = React.useState("1");
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setTimeSpan(event.target.value);
+  };
 
   return (
-    <FormControl fullWidth>
-  <NativeSelect
-    defaultValue={30}
-    inputProps={{
-      name: 'time',
-      id: 'uncontrolled-native',
-    }}
-  >
-    <option value={1}>Last 24 hours</option>
-    <option value={2}>Last 48 hours</option>
-  </NativeSelect>
-</FormControl>
+    <div style={{ "width": "70vw"}}>
+    <FormControl sx={{ m: 1 }} className="float-left mb-10 collection-dropdown">
+        <Select
+          value={timeSpan}
+          onChange={handleChange}
+          autoWidth
+        >
+
+          <MenuItem value={1}>Highest 24h Vol</MenuItem>
+          <MenuItem value={2}>Hightest Total Vol</MenuItem>
+
+        </Select>
+      </FormControl>
+      </div>
   );
 };
 

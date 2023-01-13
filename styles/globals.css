@@ -72,6 +72,11 @@ nav{
   align-items: center;
 }
 
+.collection-dropdown{
+  width: 17vw;
+  background-color: #f7f9fc;
+}
+
 .center{
   min-height: 600px;
   display: flex;

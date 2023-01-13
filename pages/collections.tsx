@@ -52,7 +52,7 @@ export default function Create() {
         </h1>
         <div className="grid place-items-center mt-10">Top collection ranked by floor price and and volume</div>
         <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"></hr>
-        {/* <CollectionDropDown/> */}
+        <CollectionDropDown/>
         <CollectionTable/>
       </main>
       <footer className={styles.footer}>
